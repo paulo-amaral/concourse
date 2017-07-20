@@ -1,0 +1,7 @@
+\use-plugin{concourse-docs}
+
+\release{2017-7-20}{3.3.3}{1.6.0}{
+  \note{feature}{
+	Added support for \code{params} in \reference{image_resource}. This probably should've always been there, but hey at least its there now! 
+  }
+}
