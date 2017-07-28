@@ -1,0 +1,66 @@
+.search {
+    box-shadow: 0 0 10px rgba(0, 0, 0, .125);
+    position: absolute;
+    z-index: 10;
+    top: 20px;
+    min-width: 230px;
+    transition: width 0.5s ease;
+}
+
+.search input {
+    width: 100%;
+    transition: width 0.5s ease;
+    margin: 0;
+    box-sizing: border-box;
+    height: 38px;
+    padding: 10px;
+    border: 0;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.search input:focus {
+    width: 400px;
+}
+
+.search .search-results {
+    margin: 0;
+    padding: 0;
+    display: none;
+    background: #fff;
+    border-top: 1px solid #E7E7E7;
+}
+
+.search .search-results li {
+    list-style: none;
+    padding: 5px 8px 5px 16px;
+    text-indent: -8px;
+}
+
+.search .search-results .parent {
+    font-size: 12px;
+    font-style: italic;
+    color: #686868;
+}
+
+.search .search-results .parent a {
+    color: #424242;
+}
+
+.search .search-results .tag {
+    font-style: italic;
+    color: #686868;
+}
+
+.search-results code {
+    padding: 0; /* SKELETOOOON */
+}
+
+.search-results code {
+    background: #f5f5f5;
+    font-weight: normal;
+    box-shadow: #f5f5f5 0 0 0 .25em;
+    border-radius: 1px;
+    padding: 0;
+    margin: 0;
+}

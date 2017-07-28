@@ -1,0 +1,14 @@
+<div class="search">
+    <form action="javascript:void(0)">
+        <input id="search" type="search" placeholder="Search&hellip;" autocomplete="off" />
+
+        <ul class="search-results">
+        </ul>
+    </form>
+</div>
+
+<script type="text/javascript">
+    var SEARCH_TAGS=[
+        {{template "search-tag.tmpl" walkContext . .Top}}
+         ]
+</script>

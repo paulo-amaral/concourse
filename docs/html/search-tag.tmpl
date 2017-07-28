@@ -1,0 +1,12 @@
+{{range .Tags}}
+[
+{{.Name | stripAux | render}}
+,
+<span class="title">
+    <a href="{{. | url}}">{{.Name | stripAux | render}}</a>
+</span>
+,
+{{. | url}}
+]
+{{end}}
+

@@ -7,6 +7,9 @@
     <link type="text/css" rel="stylesheet" href="css/resources-table.css">
     <link type="text/css" rel="stylesheet" href="css/literate.css">
     <link type="text/css" rel="stylesheet" href="css/flex-pipeline-image.css">
+    <link type="text/css" rel="stylesheet" href="css/search.css">
+
+    <script type="text/javascript" src="js/search.js"></script>
 
   </head>
   <body class="split_sections toc">
@@ -16,6 +19,8 @@
         <div id="page">
           <div id="sidebar">
             <div class="sidebar-spacing">
+              {{template "search.tmpl" .}}
+
               <div class="single-page-link">
                 <a href="single-page.html">view all docs on one page</a>
               </div>
