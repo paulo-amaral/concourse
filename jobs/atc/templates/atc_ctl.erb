@@ -34,30 +34,21 @@ source /var/vcap/packages/pid_utils/pid_utils.sh
     postgres_host, postgres_port = addr.split(":")
   end
 
-  if_p("postgresql.host", "postgresql.port", "postgresql.role.name", "postgresql.role.password", "postgresql.database") do |h, p, rn, rp, db|
-    postgres_host = h
-    postgres_port = p
-    postgres_role_name = rn
-    postgres_role_password = rp
-    postgres_database = db
-  end
+  postgres_host = p("postgresql.host", "")
 
-  if postgres_host.empty?
-    db = link("db")
+  if_link("db") do |l|
+    postgres_host = l.instances.first.address
+  end if postgres_host.empty?
 
-    postgres_host = db.instances.first.address
-    postgres_port = db.p("bind_port")
-    postgres_database = p("postgresql_database")
-    postgres_sslmode = p("postgresql.sslmode", "disable")
+  if_link("postgres") do |l|
+    postgres_host = l.instances.first.address
+  end if postgres_host.empty?
 
-    postgres_db = db.p("databases").find { |db| db["name"] == postgres_database }
-    if postgres_db.nil?
-      raise "database '#{db_name}' not provided by 'postgresql' link"
-    end
-
-    postgres_role_name = postgres_db["role"]
-    postgres_role_password = postgres_db["password"]
-  end
+  postgres_port = p("postgresql.port")
+  postgres_role_name = p("postgresql.role.name")
+  postgres_role_password = p("postgresql.role.password")
+  postgres_database = p("postgresql.database")
+  postgres_sslmode = p("postgresql.sslmode", "disable")
 %>
 
 case $1 in
