@@ -7,7 +7,7 @@ releases:
 - name: garden-runc
   version: ((garden_runc_version))
 - name: postgres
-  version: latest
+  version: 25
 
 instance_groups:
 - name: concourse
@@ -61,7 +61,9 @@ instance_groups:
     name: groundcrew
     properties:
       drain_timeout: 10m
-      tsa: {worker_key: ((worker_key))}
+      tsa:
+        worker_key: ((worker_key))
+        registration_mode: forward
 
   - release: concourse
     name: baggageclaim
