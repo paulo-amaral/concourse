@@ -25,15 +25,51 @@ chown -R vcap:vcap $LOG_DIR
   tsa_port = nil
 
   if_p("tsa.host", "tsa.port") do |host, port|
-    tsa_addrs = [host]
-    tsa_port = port
+    tsa_addrs = ["#{host}:#{port}"]
   end
 
   if tsa_addrs.nil? && tsa_port.nil?
     tsa = link("tsa")
-    tsa_addrs = tsa.instances.collect(&:address)
     tsa_port = tsa.p("bind_port")
+    tsa_addrs = tsa.instances.collect{|instance| "#{instance.address}:#{tsa_port}"}
   end
+
+  garden_addr = ""
+
+  if_p("garden.address") do |addr|
+    garden_addr = addr
+  end
+
+  if garden_addr.empty?
+    if_link("garden") do |garden|
+      instance = garden.instances.find { |i| i.id == spec.id }
+      if instance
+        garden_addr = "#{instance.address}:#{garden.p("bind_port")}"
+      end
+    end
+  end
+
+  if garden_addr.empty?
+    # no property and no link; assume it's colocated
+    garden_addr = "#{spec.address}:7777"
+  end
+
+  baggageclaim_url = ""
+
+  if_p("baggageclaim.url") do |url|
+    baggageclaim_url = url
+  end
+
+  if baggageclaim_url.empty?
+    if_link("baggageclaim") do |baggageclaim|
+      instance = baggageclaim.instances.find { |i| i.id == spec.id }
+      if instance
+        baggageclaim_url = "http://#{instance.address}:#{baggageclaim.p("bind_port")}"
+      end
+    end
+  end
+
+  name_prefix = spec.id.split("-")[0]
  %>
 
 WORKER_KEY=/var/vcap/jobs/groundcrew/config/worker_key
@@ -77,32 +113,30 @@ case $1 in
 
     tsa_addrs=(<%= tsa_addrs.join(" ") %>)
 
-    while true; do
-      rand=$RANDOM
-      tsa_addr=${tsa_addrs[$rand % ${#tsa_addrs[@]}]}
-
-      exitstatus=0
-      chpst -u vcap:vcap /var/vcap/packages/worker/bin/worker \
-             --json=$RUN_DIR/worker.json \
-             --beacon-host=$tsa_addr \
-             --beacon-port=<%= tsa_port %> \
-             --beacon-public-key=${TSA_HOST_KEY} \
-             --beacon-worker-private-key=${WORKER_KEY} \
-             <% if p("garden.forward_address", nil) %> \
-               --beacon-garden-forward-addr=<%= p("garden.forward_address") %> \
-               <% if p("baggageclaim.forward_address", nil) %> \
-                 --beacon-baggageclaim-forward-addr=<%= p("baggageclaim.forward_address") %> \
-               <% end %> \
+    chpst -u vcap:vcap /var/vcap/packages/worker/bin/worker \
+           --name=$name_prefix-$(hostname | cut -d '-' -f 2-) \
+           --version=$WORKER_VERSION \
+           --start_time='$(date +%s)' \
+           --team=<%= p("team") %> \
+           --platform=<%= p("platform") %> \
+           --tags=<%= p("tags") %> \
+           --addr=$garden_addr \
+           --baggageclaim_url=$baggageclaim_url \
+           --resources=<%= p("additional_resource_types") %> \
+           <% tsa_addrs.each do | tsa_addr | %> \
+             --tsa-host=<%= tsa_addr %> \
+           <% end %> \
+           --tsa-public-key=${TSA_HOST_KEY} \
+           --tsa-worker-private-key=${WORKER_KEY} \
+           --tsa-retry \
+           <% if p("garden.forward_address", nil) %> \
+             --tsa-garden-forward-addr=<%= p("garden.forward_address") %> \
+             <% if p("baggageclaim.forward_address", nil) %> \
+               --tsa-baggageclaim-forward-addr=<%= p("baggageclaim.forward_address") %> \
              <% end %> \
-              1>>$LOG_DIR/beacon.stdout.log \
-              2>>$LOG_DIR/beacon.stderr.log || exitstatus=$?
-
-      if [ $exitstatus -eq 0 ]; then
-        break
-      fi
-
-      sleep 1
-    done
+           <% end %> \
+            1>>$LOG_DIR/beacon.stdout.log \
+            2>>$LOG_DIR/beacon.stderr.log || exitstatus=$?
 
     ;;
 
