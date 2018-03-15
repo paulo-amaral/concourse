@@ -158,8 +158,8 @@ properties:
 
   additional_resource_types:
     description: |
-      Additional resource types supported by the workers in `[{type: string, image: string}]` format.
-    default: []
+      A path to a JSON file with additional resource types supported by the workers in `[{type: string, image: string}]` format.
+    default: ""
 
   drain_timeout:
     description: |
